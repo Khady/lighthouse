@@ -30,7 +30,16 @@ class CriConnection extends Connection {
    * @override
    * @return {!Promise}
    */
-  connect() {
+  connect(tabEndpoint) {
+    if (tabEndpoint) {
+      // If tabEndpoint is specified, a tab is already opened in the browser and there is no need to create a new one.
+      return this._runJsonCommand('list').then(tabs => {
+        const tab = tabs.find((tab) => {
+          return tab.webSocketDebuggerUrl === tabEndpoint;
+        });
+        return this._runJsonCommand(`activate/${tab.id}`).then(_ => this._connectToSocket(tab));
+      });
+    }
     return this._runJsonCommand('new')
       .then(response => this._connectToSocket(response))
       .catch(_ => {
@@ -73,7 +82,7 @@ class CriConnection extends Connection {
 
   /**
    * @param {!string} command
-   * @return {!Promise<string>}
+   * @return {!Promise<!Object>}
    */
   _runJsonCommand(command) {
     return new Promise((resolve, reject) => {

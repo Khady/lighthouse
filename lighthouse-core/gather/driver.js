@@ -96,8 +96,8 @@ class Driver {
   /**
    * @return {!Promise<null>}
    */
-  connect() {
-    return this._connection.connect();
+  connect(tabEndpoint) {
+    return this._connection.connect(tabEndpoint);
   }
 
   disconnect() {
